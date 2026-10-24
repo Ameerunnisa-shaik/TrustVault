@@ -1,0 +1,28 @@
+
+# Dependencies
+node_modules/
+*/node_modules/
+
+# Production builds
+dist/
+*/dist/
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+*.env
+
+# Database files and logs
+*.db
+*.db-journal
+*.log
+npm-debug.log*
+
+# Private documents
+backend/private_storage/*
+!backend/private_storage/.gitkeep
+
+# Operating system files
+.DS_Store
+Thumbs.db
