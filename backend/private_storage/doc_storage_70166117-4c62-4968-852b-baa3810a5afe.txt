@@ -1,0 +1,4 @@
+CONFIDENTIAL TRUSTVAULT SYSTEM ARCHITECTURE:
+- Zero Trust Multi-Tenant Model
+- Backend Enforced RBAC
+- Strict Explicit Document Grants

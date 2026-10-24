@@ -1,0 +1,124 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String        @id @default(uuid())
+  email        String        @unique
+  passwordHash String
+  fullName     String
+  avatarUrl    String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  memberships         Membership[]
+  ownedDocuments      Document[]           @relation("DocumentOwner")
+  grantedPermissions  DocumentPermission[] @relation("GrantedBy")
+  receivedPermissions DocumentPermission[] @relation("ReceivedBy")
+  auditLogs           AuditLog[]
+
+  @@index([email])
+}
+
+model Company {
+  id        String   @id @default(uuid())
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  memberships Membership[]
+  documents   Document[]
+  auditLogs   AuditLog[]
+
+  @@index([slug])
+}
+
+model Membership {
+  id        String   @id @default(uuid())
+  userId    String
+  companyId String
+  role      String   @default("MEMBER") // ADMIN, MEMBER, VIEWER
+  status    String   @default("ACTIVE") // ACTIVE, SUSPENDED
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, companyId])
+  @@index([userId])
+  @@index([companyId])
+}
+
+model Document {
+  id           String   @id @default(uuid())
+  companyId    String
+  ownerId      String
+  name         String
+  originalName String
+  mimeType     String
+  sizeBytes    Int
+  storageKey   String   @unique
+  checksum     String?
+  isArchived   Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  company     Company              @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  owner       User                 @relation("DocumentOwner", fields: [ownerId], references: [id], onDelete: Restrict)
+  permissions DocumentPermission[]
+  auditLogs   AuditLog[]
+
+  @@index([companyId])
+  @@index([ownerId])
+}
+
+model DocumentPermission {
+  id          String    @id @default(uuid())
+  documentId  String
+  userId      String
+  permission  String    @default("VIEW") // VIEW, DOWNLOAD, SHARE, ADMIN
+  grantedById String
+  expiresAt   DateTime?
+  revokedAt   DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  document  Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  user      User     @relation("ReceivedBy", fields: [userId], references: [id], onDelete: Cascade)
+  grantedBy User     @relation("GrantedBy", fields: [grantedById], references: [id], onDelete: Restrict)
+
+  @@unique([documentId, userId])
+  @@index([documentId])
+  @@index([userId])
+  @@index([revokedAt])
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  companyId  String
+  actorId    String?
+  documentId String?
+  action     String   // AUTH_LOGIN, AUTH_LOGOUT, AUTH_FAILED, DOC_UPLOAD, DOC_VIEW, DOC_DOWNLOAD, DOC_SHARE, DOC_REVOKE, DOC_DELETE, ACCESS_DENIED, ROLE_CHANGE
+  outcome    String   // SUCCESS, DENIED
+  ipAddress  String?
+  userAgent  String?
+  metadata   String?  // JSON string
+  createdAt  DateTime @default(now())
+
+  company  Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  actor    User?     @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  document Document? @relation(fields: [documentId], references: [id], onDelete: SetNull)
+
+  @@index([companyId])
+  @@index([actorId])
+  @@index([documentId])
+  @@index([action])
+  @@index([createdAt])
+}
