@@ -4,15 +4,12 @@
   "description": "Secure multi-tenant document sharing platform backend API",
   "main": "dist/index.js",
   "scripts": {
-    "dev": "tsx watch src/index.ts",
-    "build": "tsc",
-    "start": "node dist/index.js",
-    "prisma:generate": "prisma generate",
-    "prisma:migrate": "prisma migrate dev",
-    "prisma:push": "prisma db push",
-    "prisma:seed": "tsx prisma/seed.ts",
-    "test": "vitest run"
-  },
+  "build": "prisma generate && tsc",
+  "start": "node dist/index.js",
+  "postinstall": "prisma generate",
+  "prisma:generate": "prisma generate",
+  "prisma:push": "prisma db push"
+}
   "keywords": [
     "security",
     "multi-tenant",
