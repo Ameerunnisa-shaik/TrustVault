@@ -87,9 +87,11 @@ app.use('/api/*', (req, res) => {
 app.use(errorHandler);
 
 // Start server if not running in test suite
-if (process.env.NODE_ENV !== 'test') {
+if (process.env.VERCEL !== '1' && process.env.NODE_ENV !== 'test') {
   app.listen(config.port, () => {
-    console.log(`[TrustVault] Server running securely on port ${config.port} (${config.nodeEnv})`);
+    console.log(
+      `[TrustVault] Server running securely on port ${config.port} (${config.nodeEnv})`
+    );
   });
 }
 
