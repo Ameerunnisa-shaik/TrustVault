@@ -27,9 +27,13 @@ export class StorageService {
   private baseDir: string;
 
   constructor() {
-    this.baseDir = config.storageDir;
+  this.baseDir = config.storageDir;
+
+  // Vercel serverless environment lo local folder create cheyyaku
+  if (process.env.VERCEL !== '1') {
     this.ensureDirectoryExists();
   }
+}
 
   private ensureDirectoryExists(): void {
     if (!fs.existsSync(this.baseDir)) {
